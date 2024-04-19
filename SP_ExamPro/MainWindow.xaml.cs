@@ -9,7 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-
+// додано розмітку та логіку пошуку
 namespace SP_ExamPro
 {
     
