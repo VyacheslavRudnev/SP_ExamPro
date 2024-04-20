@@ -1,14 +1,7 @@
 ﻿using System.IO;
 using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using MaterialDesignThemes.Wpf;
 
 namespace SP_ExamPro
 {
@@ -20,6 +13,7 @@ namespace SP_ExamPro
     {
         private int filesChecked = 0;
         private int filesCount = 0;
+        private int totalMatches = 0;
         public MainWindow()
         {
             InitializeComponent();
@@ -32,18 +26,30 @@ namespace SP_ExamPro
             string word = tbx_word.Text;         
             List<string> files = new List<string>();
 
+            if (string.IsNullOrEmpty(tbx_word.Text) || string.IsNullOrWhiteSpace(tbx_path.Text))
+            {
+                MessageBox.Show("Вкажіть слово для пошуку та адресу до папки.");
+                return;
+            }
+
             tb_data.Text = "Починаємо перевірку файлів...\n";
             pb.Value = 0;
             filesChecked = 0;
+            totalMatches = 0;
 
             await GetFoldersAsync(path, files);
             filesCount = files.Count;
-            pb.Maximum = filesCount;
+            pb.Maximum = 100;
 
             await Task.Run(() =>
             {
                 Parallel.ForEach(files, (file) => ReadFile(file, word).Wait());
             });
+
+            MessageBox.Show("Перевірку файлів завершено.\n" +
+                $"Всього перевірено: {filesChecked} файлів.\n" +
+                $"Знайдено: {totalMatches} співпадінь слова '{word}'.");
+
         }
 
         private void UpdateStatus(string status)
@@ -67,6 +73,7 @@ namespace SP_ExamPro
                         if (text != null && text.IndexOf(word, StringComparison.OrdinalIgnoreCase) >= 0) // регістр бук не враховуєм
                         {
                             count++;
+                            totalMatches++;
                         }
                     }
                 }
@@ -75,12 +82,13 @@ namespace SP_ExamPro
 
             filesChecked++;
             UpdateProgressBar();
+            
         }
         private void UpdateProgressBar()
         {
             Dispatcher.Invoke(() =>
             {
-                pb.Value = filesChecked;
+                pb.Value = (int)((double)filesChecked / filesCount * 100);
             });
         }
 
@@ -97,7 +105,7 @@ namespace SP_ExamPro
 
                 foreach (var folder in Directory.EnumerateDirectories(path))
                 {
-                    GetFoldersAsync(folder, files);
+                    await GetFoldersAsync(folder, files);
                 }
 
                 return filesList.ToString();
