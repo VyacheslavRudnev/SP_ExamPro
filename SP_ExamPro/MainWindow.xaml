@@ -62,7 +62,7 @@
                    Grid.Row="2"
                    Grid.ColumnSpan="7"
                    Grid.RowSpan="5"
-                   FontSize="24"
+                   FontSize="16"
                    Background="White"
                    Margin="20 0 20 0" />
         </ScrollViewer>

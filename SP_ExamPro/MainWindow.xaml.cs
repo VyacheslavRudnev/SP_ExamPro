@@ -18,8 +18,8 @@ namespace SP_ExamPro
     /// </summary>
     public partial class MainWindow : Window
     {
-        //private string word = "Завдання";
-        
+        private int filesChecked = 0;
+        private int filesCount = 0;
         public MainWindow()
         {
             InitializeComponent();
@@ -34,16 +34,14 @@ namespace SP_ExamPro
 
             tb_data.Text = "Починаємо перевірку файлів...\n";
             pb.Value = 0;
+            filesChecked = 0;
 
-            var progress = new Progress<int>(value =>
-            {
-                pb.Value = value;
-            });
+            await GetFoldersAsync(path, files);
+            filesCount = files.Count;
+            pb.Maximum = filesCount;
 
             await Task.Run(() =>
             {
-                GetFoldersAsync(path, files);
-                Dispatcher.Invoke(() => tb_data.Text += $"{0}: {files.Count} {Environment.NewLine}");
                 Parallel.ForEach(files, (file) => ReadFile(file, word).Wait());
             });
         }
@@ -66,8 +64,7 @@ namespace SP_ExamPro
                     while (!sr.EndOfStream)
                     {
                         string? text = await sr.ReadLineAsync();
-                        //if (text != null && text.Contains(word)) - враховує регістр букв в слові
-                        if (text != null && text.IndexOf(word, StringComparison.OrdinalIgnoreCase) >= 0) // без врахування регістру
+                        if (text != null && text.IndexOf(word, StringComparison.OrdinalIgnoreCase) >= 0) // регістр бук не враховуєм
                         {
                             count++;
                         }
@@ -75,7 +72,18 @@ namespace SP_ExamPro
                 }
             }
             Dispatcher.Invoke(() => tb_data.Text += $"{System.IO.Path.GetFileName(path)}\t| {System.IO.Path.GetFullPath(path)}\t| {count}{Environment.NewLine}");
+
+            filesChecked++;
+            UpdateProgressBar();
         }
+        private void UpdateProgressBar()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                pb.Value = filesChecked;
+            });
+        }
+
         private async Task<string> GetFoldersAsync(string path, List<string> files)
         {
             try
