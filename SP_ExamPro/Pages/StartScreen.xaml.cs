@@ -70,19 +70,30 @@ public partial class StartScreen : UserControl
     {
 
         int count = 0;
+        string fileText;
         using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
         {
             using (StreamReader sr = new StreamReader(fs))
             {
-                while (!sr.EndOfStream)
-                {
-                    string? text = await sr.ReadLineAsync();
-                    if (text != null && text.IndexOf(word, StringComparison.OrdinalIgnoreCase) >= 0) // регістр бук не враховуєм
-                    {
-                        count++;
-                        totalMatches++;
-                    }
-                }
+                fileText = await sr.ReadToEndAsync();
+                //while (!sr.EndOfStream)
+                //{
+                //    string? text = await sr.ReadLineAsync();
+                //    if (text != null && text.IndexOf(word, StringComparison.OrdinalIgnoreCase) >= 0)
+                //    {
+                //        count++;
+                //        totalMatches++;
+                //    }
+                //}
+            }
+        }
+        string[] words = fileText.Split(new char[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        foreach (string w in words)
+        {
+            if (w.IndexOf(word, StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                count++;
+                totalMatches++;
             }
         }
         Dispatcher.Invoke(() => tb_data.Text += $"{System.IO.Path.GetFileName(path)}\t|\t{System.IO.Path.GetFullPath(path)}\t|\t{count}{Environment.NewLine}");
