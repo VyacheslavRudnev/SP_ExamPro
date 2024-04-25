@@ -24,7 +24,9 @@ namespace SP_ExamPro.Pages
         public ErrorScreen()
         {
             InitializeComponent();
-            lottileObj.FileName = "C:\\Users\\Rudnev V\\source\\repos\\ADO.NET\\SP_ExamPro\\SP_ExamPro\\Assets\\ErrorMess.json";
+            var projectDirectory = System.IO.Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName;
+            var jsonFilePath = System.IO.Path.Combine(projectDirectory, "Assets\\ErrorMess.json");
+            lottileObj.FileName = jsonFilePath;
             lottileObj.PlayAnimation();
         }
 
